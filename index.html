@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML Previewer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: monospace; background: #1a1a1a; color: #ccc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  .bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: #111; border-bottom: 1px solid #333; flex-shrink: 0;
+  }
+
+  .btn {
+    font-family: monospace; font-size: 12px; padding: 5px 14px;
+    border-radius: 5px; border: 1px solid #444; cursor: pointer;
+    background: #222; color: #ccc; transition: all 0.15s;
+  }
+  .btn:hover { border-color: #aaa; color: #fff; }
+  .btn.run { background: #00ff33; color: #000; border-color: #00ff33; font-weight: bold; }
+  .btn.run:hover { background: #00cc29; }
+
+  .hint { font-size: 11px; color: #555; margin-left: auto; }
+
+  .panes { display: flex; flex: 1; overflow: hidden; }
+
+  .left { width: 50%; display: flex; flex-direction: column; border-right: 2px solid #333; }
+
+  textarea {
+    flex: 1; background: #111; color: #e0e0e0; border: none; outline: none;
+    font-family: monospace; font-size: 13px; line-height: 1.6;
+    padding: 14px; resize: none; tab-size: 2; white-space: pre;
+  }
+
+  iframe { width: 50%; border: none; background: #fff; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <button class="btn run" id="runBtn">&#9654; Run</button>
+  <button class="btn" id="clearBtn">Clear</button>
+  <span class="hint">Paste HTML &rarr; Run &nbsp;|&nbsp; Ctrl+Enter</span>
+</div>
+
+<div class="panes">
+  <div class="left">
+    <textarea id="code" spellcheck="false" placeholder="Paste your HTML here..."></textarea>
+  </div>
+  <iframe id="preview" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+</div>
+
+<script>
+  const code = document.getElementById('code');
+  const preview = document.getElementById('preview');
+
+  function run() {
+    const doc = preview.contentDocument || preview.contentWindow.document;
+    doc.open();
+    doc.write(code.value);
+    doc.close();
+  }
+
+  document.getElementById('runBtn').addEventListener('click', run);
+  document.getElementById('clearBtn').addEventListener('click', () => { code.value = ''; });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') run();
+  });
+
+  code.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = code.selectionStart;
+      code.value = code.value.substring(0, s) + '  ' + code.value.substring(code.selectionEnd);
+      code.selectionStart = code.selectionEnd = s + 2;
+    }
+  });
+</script>
+
+</body>
+</html>
