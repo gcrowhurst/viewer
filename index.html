@@ -2,52 +2,100 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HTML Previewer</title>
+<title>HTML Preview</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: monospace; background: #1a1a1a; color: #ccc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  body { font-family: monospace; background: #111; color: #ccc; height: 100vh; display: flex; flex-direction: column; }
 
-  .bar {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 12px; background: #111; border-bottom: 1px solid #333; flex-shrink: 0;
+  #paste-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
   }
 
-  .btn {
-    font-family: monospace; font-size: 12px; padding: 5px 14px;
-    border-radius: 5px; border: 1px solid #444; cursor: pointer;
-    background: #222; color: #ccc; transition: all 0.15s;
-  }
-  .btn:hover { border-color: #aaa; color: #fff; }
-  .btn.run { background: #00ff33; color: #000; border-color: #00ff33; font-weight: bold; }
-  .btn.run:hover { background: #00cc29; }
-
-  .hint { font-size: 11px; color: #555; margin-left: auto; }
-
-  .panes { display: flex; flex: 1; overflow: hidden; }
-
-  .left { width: 50%; display: flex; flex-direction: column; border-right: 2px solid #333; }
+  label { font-size: 13px; color: #666; }
 
   textarea {
-    flex: 1; background: #111; color: #e0e0e0; border: none; outline: none;
-    font-family: monospace; font-size: 13px; line-height: 1.6;
-    padding: 14px; resize: none; tab-size: 2; white-space: pre;
+    width: 100%;
+    max-width: 700px;
+    height: 260px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 14px;
+    resize: vertical;
+    outline: none;
+    tab-size: 2;
+  }
+  textarea:focus { border-color: #555; }
+
+  button {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 32px;
+    background: #00ff33;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: #00cc29; }
+
+  #preview-screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
   }
 
-  iframe { width: 50%; border: none; background: #fff; }
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #111;
+    border-bottom: 1px solid #222;
+    flex-shrink: 0;
+  }
+
+  .back-btn {
+    font-family: monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    background: #222;
+    color: #ccc;
+    border: 1px solid #444;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .back-btn:hover { border-color: #aaa; color: #fff; }
+
+  iframe {
+    flex: 1;
+    border: none;
+    width: 100%;
+  }
 </style>
 </head>
 <body>
 
-<div class="bar">
-  <button class="btn run" id="runBtn">&#9654; Run</button>
-  <button class="btn" id="clearBtn">Clear</button>
-  <span class="hint">Paste HTML &rarr; Run &nbsp;|&nbsp; Ctrl+Enter</span>
+<div id="paste-screen">
+  <label>Paste your HTML then click Run</label>
+  <textarea id="code" spellcheck="false" placeholder="Paste HTML here..."></textarea>
+  <button id="runBtn">&#9654; Run</button>
 </div>
 
-<div class="panes">
-  <div class="left">
-    <textarea id="code" spellcheck="false" placeholder="Paste your HTML here..."></textarea>
+<div id="preview-screen">
+  <div class="topbar">
+    <button class="back-btn" id="backBtn">&#8592; Back</button>
   </div>
   <iframe id="preview" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 </div>
@@ -55,16 +103,24 @@
 <script>
   const code = document.getElementById('code');
   const preview = document.getElementById('preview');
+  const pasteScreen = document.getElementById('paste-screen');
+  const previewScreen = document.getElementById('preview-screen');
 
   function run() {
+    if (!code.value.trim()) return;
     const doc = preview.contentDocument || preview.contentWindow.document;
     doc.open();
     doc.write(code.value);
     doc.close();
+    pasteScreen.style.display = 'none';
+    previewScreen.style.display = 'flex';
   }
 
   document.getElementById('runBtn').addEventListener('click', run);
-  document.getElementById('clearBtn').addEventListener('click', () => { code.value = ''; });
+  document.getElementById('backBtn').addEventListener('click', () => {
+    pasteScreen.style.display = 'flex';
+    previewScreen.style.display = 'none';
+  });
 
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') run();
